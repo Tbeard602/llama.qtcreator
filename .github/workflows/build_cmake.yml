@@ -216,9 +216,13 @@ jobs:
 
         if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
           execute_process(
-            COMMAND "${{ matrix.config.environment_script }}" && set
+            COMMAND cmd /c "call \"${{ matrix.config.environment_script }}\" && set"
             OUTPUT_FILE environment_script_output.txt
+            RESULT_VARIABLE environment_result
           )
+          if (NOT environment_result EQUAL 0)
+            message(FATAL_ERROR "Failed to initialize the MSVC environment")
+          endif()
           file(STRINGS environment_script_output.txt output_lines)
           foreach(line IN LISTS output_lines)
             if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
